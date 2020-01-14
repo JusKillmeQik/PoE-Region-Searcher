@@ -6,16 +6,19 @@
  
 #NoEnv
 SetWorkingDir %A_ScriptDir%
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
 #WinActivateForce
 #SingleInstance force
 #Include %A_LineFile%\..\JSON.ahk
- 
+
+global count := 2
+
 tog1:=0
 Hide1:=0
 WinName:="Path Of Exile's Conquerors Influence Tracker"
  
 SleepTime=200
- 
+
 Array1:=[]
 Array1[1]:="Haewark"
 Array1[2]:="Tirn`'s End"
@@ -28,7 +31,7 @@ Array1[8]:="Lira Arthain"
 
 KeyWidth=70
 KeyHeightRegionName=20
-KeyHeightInfluence=10
+KeyHeightInfluence=80
 
 NUM_REGIONS=8
  
@@ -103,67 +106,140 @@ Update_GUI()
             Gui, 4:Add, Button,vBtnId%A_Index% gKeyPressed%A_Index% w%KeyWidth% h%KeyHeightRegionName% x+0 yp, % Array1[A_Index]
      
     }
-     
+
+;Get the height by counting the number of influences that have to be displayed
+    Loop %NUM_REGIONS% {
+	temp_count := 0
+        if (VeritaniaInfluence%A_Index% > 0)
+        {
+		temp_count++
+	}
+        if (DroxInfluence%A_Index% > 0)
+        {
+		temp_count++
+	}
+        if (BaranInfluence%A_Index% > 0)
+        {
+		temp_count++
+	}
+        if (HezminInfluence%A_Index% > 0)
+        {
+		temp_count++
+	}
+	if (temp_count > count)
+	{
+		count := temp_count
+	}
+    }
+
     Loop %NUM_REGIONS% {
         influence := "None"
-        
+        state := "None"
+
         if (VeritaniaInfluence%A_Index% > 0)
         {
             if (VeritaniaInfluence%A_Index% < 4)
             {    
                 influence := StrConcat("Veritania ", VeritaniaInfluence%A_Index%)
-                influence := StrConcat(influence, "/3")
+                influence := StrConcat(influence, "/3`r`n")
+		state := "Active"
             }
             else
             {
-                influence := "Veritania Done"
+                influence := "Veritania Done`r`n"
+		state := "Done"
             }
         }
         
         if (DroxInfluence%A_Index% > 0)
         {
             if (DroxInfluence%A_Index% < 4)
-            {  
-                influence := StrConcat("Drox ", DroxInfluence%A_Index%)
-                influence := StrConcat(influence, "/3")
+            {
+		if (state == "Done")
+		{
+			state := influence
+			influence := StrConcat("Drox ", DroxInfluence%A_Index%)
+                	influence := StrConcat(influence, "/3`r`n")
+                	influence := StrConcat(influence, state)
+			state := "Active"
+		} else {
+                	influence := StrConcat("Drox ", DroxInfluence%A_Index%)
+                	influence := StrConcat(influence, "/3`r`n")
+			state := "Active"
+		}
             }
             else
             {
-                influence := "Drox Done"
+		if (state == "None")
+		{
+                	influence := "Drox Done`r`n"
+			state := "Done"
+		} else {
+			influence := StrConcat(influence, "Drox Done`r`n")
+		}
             }
         }
         
         if (BaranInfluence%A_Index% > 0)
         {
             if (BaranInfluence%A_Index% < 4)
-            {  
-                influence := StrConcat("Baran ", BaranInfluence%A_Index%)
-                influence := StrConcat(influence, "/3")
+            {
+		if (state == "Done")
+		{
+			state := influence
+			influence := StrConcat("Baran ", BaranInfluence%A_Index%)
+                	influence := StrConcat(influence, "/3`r`n")
+                	influence := StrConcat(influence, state)
+			state := "Active"
+		} else {
+                	influence := StrConcat("Baran ", BaranInfluence%A_Index%)
+                	influence := StrConcat(influence, "/3`r`n")
+			state := "Active"
+		}
             }
             else
             {
-                influence := "Baran Done"
+		if (state == "None")
+		{
+                	influence := "Baran Done`r`n"
+			state := "Done"
+		} else {
+			influence := StrConcat(influence, "Baran Done`r`n")
+		}
             }
         }
         
         if (HezminInfluence%A_Index% > 0)
         {
             if (HezminInfluence%A_Index% < 4)
-            {  
-                influence := StrConcat("Hezmin ", HezminInfluence%A_Index%)
-                influence := StrConcat(influence, "/3")
+            {
+		if (state == "Done")
+		{
+			state := influence
+			influence := StrConcat("Hezmin ", HezminInfluence%A_Index%)
+                	influence := StrConcat(influence, "/3`r`n")
+                	influence := StrConcat(influence, state)
+			state := "Active"
+		} else {
+                	influence := StrConcat("Hezmin ", HezminInfluence%A_Index%)
+                	influence := StrConcat(influence, "/3")
+		}
             }
             else
             {
-                influence := "Hezmin Done"
+		if (state == "None")
+		{
+                	influence := "Hezmin Done"
+		} else {
+			influence := StrConcat(influence, "Hezmin Done")
+		}
             }
         }
-
         Col:=A_Index
         If Col=1
-            Gui, 4:Add, Text, r2 w%KeyWidth% h%KeyHeightInfluence% xm y+5, %influence%
+            Gui, 4:Add, Text, r%count% w%KeyWidth% h%KeyHeightInfluence% xm y+5, %influence%
         Else
-            Gui, 4:Add, Text, r2 w%KeyWidth% h%KeyHeightInfluence% x+0 yp, %influence%
+            Gui, 4:Add, Text, r%count% w%KeyWidth% h%KeyHeightInfluence% x+0 yp, %influence%
     }
      
     Loop %NUM_REGIONS% {
@@ -252,13 +328,49 @@ read_poe_log:
                     VeritaniaInfluence%lastRegionIndexVisited% := VeritaniaInfluence%lastRegionIndexVisited% + 1     
                     UpdateINI(VeritaniaInfluence%lastRegionIndexVisited%, ININame, key, "Veritania")
                     Update_GUI()
+			if (DroxInfluence%lastRegionIndexVisited% > 0) and (DroxInfluence%lastRegionIndexVisited% < 4)
+			{
+				DroxInfluence%lastRegionIndexVisited% := 4
+				UpdateINI(DroxInfluence%lastRegionIndexVisited%, ININame, key, "Drox")
+				Update_GUI()
+			}
+			if (BaranInfluence%lastRegionIndexVisited% > 0) and (BaranInfluence%lastRegionIndexVisited% < 4)
+			{
+				BaranInfluence%lastRegionIndexVisited% := 4
+				UpdateINI(BaranInfluence%lastRegionIndexVisited%, ININame, key, "Baran")      
+				Update_GUI()
+			}
+			if (HezminInfluence%lastRegionIndexVisited% > 0) and (HezminInfluence%lastRegionIndexVisited% < 4)
+			{
+				HezminInfluence%lastRegionIndexVisited% := 4
+				UpdateINI(HezminInfluence%lastRegionIndexVisited%, ININame, key, "Al-Hezmin")      
+				Update_GUI()
+			}
                 }
                 
                 if InStr(line, "Drox, the Warlord") and DroxInfluence%lastRegionIndexVisited% < 4
                 {
                     DroxInfluence%lastRegionIndexVisited% := DroxInfluence%lastRegionIndexVisited% + 1  
                     UpdateINI(DroxInfluence%lastRegionIndexVisited%, ININame, key, "Drox")      
-                    Update_GUI()                
+                    Update_GUI()
+			if (VeritaniaInfluence%lastRegionIndexVisited% > 0) and (VeritaniaInfluence%lastRegionIndexVisited% < 4)
+			{
+				VeritaniaInfluence%lastRegionIndexVisited% := 4    
+				UpdateINI(VeritaniaInfluence%lastRegionIndexVisited%, ININame, key, "Veritania")
+				Update_GUI()
+			}
+			if (BaranInfluence%lastRegionIndexVisited% > 0) and (BaranInfluence%lastRegionIndexVisited% < 4)
+			{
+				BaranInfluence%lastRegionIndexVisited% := 4
+				UpdateINI(BaranInfluence%lastRegionIndexVisited%, ININame, key, "Baran")      
+				Update_GUI()
+			}
+			if (HezminInfluence%lastRegionIndexVisited% > 0) and (HezminInfluence%lastRegionIndexVisited% < 4)
+			{
+				HezminInfluence%lastRegionIndexVisited% := 4
+				UpdateINI(HezminInfluence%lastRegionIndexVisited%, ININame, key, "Al-Hezmin")      
+				Update_GUI()
+			}
                 }
                 
                 if InStr(line, "Baran, the Crusader") and BaranInfluence%lastRegionIndexVisited% < 4
@@ -266,6 +378,24 @@ read_poe_log:
                     BaranInfluence%lastRegionIndexVisited% := BaranInfluence%lastRegionIndexVisited% + 1     
                     UpdateINI(BaranInfluence%lastRegionIndexVisited%, ININame, key, "Baran")      
                     Update_GUI()
+			if (VeritaniaInfluence%lastRegionIndexVisited% > 0) and (VeritaniaInfluence%lastRegionIndexVisited% < 4)
+			{
+				VeritaniaInfluence%lastRegionIndexVisited% := 4    
+				UpdateINI(VeritaniaInfluence%lastRegionIndexVisited%, ININame, key, "Veritania")
+				Update_GUI()
+			}
+			if (DroxInfluence%lastRegionIndexVisited% > 0) and (DroxInfluence%lastRegionIndexVisited% < 4)
+			{
+				DroxInfluence%lastRegionIndexVisited% := 4
+				UpdateINI(DroxInfluence%lastRegionIndexVisited%, ININame, key, "Drox")
+				Update_GUI()
+			}
+			if (HezminInfluence%lastRegionIndexVisited% > 0) and (HezminInfluence%lastRegionIndexVisited% < 4)
+			{
+				HezminInfluence%lastRegionIndexVisited% := 4
+				UpdateINI(HezminInfluence%lastRegionIndexVisited%, ININame, key, "Al-Hezmin")      
+				Update_GUI()
+			}
                 }
                 
                 if InStr(line, "Al-Hezmin, the Hunter") and HezminInfluence%lastRegionIndexVisited% < 4
@@ -273,6 +403,24 @@ read_poe_log:
                     HezminInfluence%lastRegionIndexVisited% := HezminInfluence%lastRegionIndexVisited% + 1               
                     UpdateINI(HezminInfluence%lastRegionIndexVisited%, ININame, key, "Al-Hezmin")      
                     Update_GUI()
+			if (VeritaniaInfluence%lastRegionIndexVisited% > 0) and (VeritaniaInfluence%lastRegionIndexVisited% < 4)
+			{
+				VeritaniaInfluence%lastRegionIndexVisited% := 4    
+				UpdateINI(VeritaniaInfluence%lastRegionIndexVisited%, ININame, key, "Veritania")
+				Update_GUI()
+			}
+			if (DroxInfluence%lastRegionIndexVisited% > 0) and (DroxInfluence%lastRegionIndexVisited% < 4)
+			{
+				DroxInfluence%lastRegionIndexVisited% := 4
+				UpdateINI(DroxInfluence%lastRegionIndexVisited%, ININame, key, "Drox")
+				Update_GUI()
+			}
+			if (BaranInfluence%lastRegionIndexVisited% > 0) and (BaranInfluence%lastRegionIndexVisited% < 4)
+			{
+				BaranInfluence%lastRegionIndexVisited% := 4
+				UpdateINI(BaranInfluence%lastRegionIndexVisited%, ININame, key, "Baran")      
+				Update_GUI()
+			}
                 }
                 
                 ResetIfCompleted()
@@ -287,7 +435,19 @@ read_poe_log:
         conquerorsDone := 0
         loop %NUM_REGIONS%
         {
-            if (VeritaniaInfluence%A_Index% == 4 or DroxInfluence%A_Index% == 4 or BaranInfluence%A_Index% == 4 or HezminInfluence%A_Index% == 4)
+            if (VeritaniaInfluence%A_Index% == 4)
+            {
+                conquerorsDone := conquerorsDone + 1
+            }
+            if (DroxInfluence%A_Index% == 4)
+            {
+                conquerorsDone := conquerorsDone + 1
+            }
+            if (BaranInfluence%A_Index% == 4)
+            {
+                conquerorsDone := conquerorsDone + 1
+            }
+            if (HezminInfluence%A_Index% == 4)
             {
                 conquerorsDone := conquerorsDone + 1
             }
@@ -297,7 +457,6 @@ read_poe_log:
         {
             loop %NUM_REGIONS%
             {
-                lastRegionVisited := false
                 VeritaniaInfluence%A_Index% := 0
                 DroxInfluence%A_Index% := 0
                 BaranInfluence%A_Index% := 0
@@ -541,3 +700,5 @@ GetRegionIndex(array1, lastRegionVisited)
 	
 	return 0
 }
+
+^SPACE::  Winset, Alwaysontop, , A

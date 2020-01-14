@@ -13,6 +13,7 @@ regions automatically, by parsing Path Of Exile's client log.
 * Smaller UI with simple corner placement
 * Maps in the same order as in game
 * Auto loading saved state
+* Keeps track of areas that have had multiple elder slayers
 
 # Custom Search
 
